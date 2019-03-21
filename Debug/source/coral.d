@@ -29,6 +29,9 @@ source/coral.obj: C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/reg_flash.h
 source/coral.obj: C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/reg_tcram.h
 source/coral.obj: C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/i2c.h
 source/coral.obj: C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/reg_i2c.h
+source/coral.obj: C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/pinmux.h
+source/coral.obj: C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/reg_pinmux.h
+source/coral.obj: C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/sys_core.h
 
 ../source/coral.c: 
 C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/coral.h: 
@@ -59,3 +62,6 @@ C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/reg_flash.h:
 C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/reg_tcram.h: 
 C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/i2c.h: 
 C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/reg_i2c.h: 
+C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/pinmux.h: 
+C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/reg_pinmux.h: 
+C:/Users/AQaut/workspace_v8/RM46_HAL_TEST/include/sys_core.h: 

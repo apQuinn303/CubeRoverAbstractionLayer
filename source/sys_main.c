@@ -71,7 +71,7 @@ uint32 	emacPhyAddress	=	0U;
 int main(void)
 {
 /* USER CODE BEGIN (3) */
-
+    testbench();
 /* USER CODE END */
 
     return 0;
@@ -81,11 +81,13 @@ int main(void)
 /* USER CODE BEGIN (4) */
 void testbench()
 {
+    coral__setup();
     for(;;)
     {
         MDmessage_t myMessage;
-        coral__setup();
-        coral__sendMDMessage(0x48, &myMessage);
+        myMessage.speedData = 7U;
+        myMessage.checkSum = 10U;
+        coral__sendMDMessage(10, &myMessage);
     }
 }
 /* USER CODE END */

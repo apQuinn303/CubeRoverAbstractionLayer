@@ -131,7 +131,7 @@
 #define configUSE_COUNTING_SEMAPHORES   0
 
 /* Timers */
-#define configUSE_TIMERS                0
+#define configUSE_TIMERS                1
 #define configTIMER_TASK_PRIORITY		( 0 )
 #define configTIMER_QUEUE_LENGTH		0
 #define configTIMER_TASK_STACK_DEPTH	( 0 )

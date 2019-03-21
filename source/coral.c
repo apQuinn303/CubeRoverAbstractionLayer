@@ -12,6 +12,8 @@
 #include "freeRTOS.h"
 #include "os_semphr.h"
 #include "os_queue.h"
+#include "pinmux.h"
+#include "sys_core.h"
 
 void coral__sendMDMessage(uint8 addr, MDmessage_t* message)
 {
@@ -33,6 +35,7 @@ void coral__sendMDMessage(uint8 addr, MDmessage_t* message)
     }
 
     i2cSetSlaveAdd(i2cREG1, (uint32)addr);
+
     i2cSetDirection(i2cREG1, I2C_TRANSMITTER);
     i2cSetMode(i2cREG1, I2C_MASTER);
 
@@ -42,9 +45,27 @@ void coral__sendMDMessage(uint8 addr, MDmessage_t* message)
 
     i2cSetStart(i2cREG1);
 
-    xSemaphoreTake(i2cTransmitLock, 0);
+    //xSemaphoreTake(i2cTransmitLock, 0);
 
-    i2cSend(i2cREG1, MD_MESSAGE_LEN, raw_message);
+    //i2cSend(i2cREG1, MD_MESSAGE_LEN, raw_message);
+
+    i2cSendByte(i2cREG1, raw_message[0]);
+
+    i2cSendByte(i2cREG1, raw_message[1]);
+
+    i2cSendByte(i2cREG1, raw_message[2]);
+
+
+
+    /* Wait until Bus Busy is cleared */
+     while(i2cIsBusBusy(i2cREG1) == true);
+
+    /* Wait until Stop is detected */
+    while(i2cIsStopDetected(i2cREG1) == 0);
+
+    /* Clear the Stop condition */
+    i2cClearSCD(i2cREG1);
+
 
 }
 
@@ -60,6 +81,7 @@ void coral__receiveMDStatus(uint8 addr, MDmessage_t* status)
 
 void coral__setup(void)
 {
+    muxInit();
     /* I2C Init as per GUI
      *  Mode = Master - Transmitter
      *  baud rate = 100KHz
@@ -67,9 +89,11 @@ void coral__setup(void)
      */
     i2cInit();
 
-    i2cEnableNotification(i2cREG1, I2C_TX_INT | I2C_SCD_INT);
+    _enable_interrupt_();
 
-    i2cTransmitLock = xSemaphoreCreateMutex();
+    i2cEnableNotification(i2cREG1, I2C_TX_INT | I2C_RX_INT | I2C_ARDY_INT | I2C_NACK_INT);
+
+    //i2cTransmitLock = xSemaphoreCreateMutex();
 
 
 }
@@ -106,9 +130,11 @@ uint8 coral__parity(uint8 x)
 
 void i2cNotification(i2cBASE_t *i2c, uint32 flags)
 {
+    (void)1;
+
     if(flags == (uint32)I2C_TX_INT)
     {
-        xSemaphoreGive(i2cTransmitLock);
+        (void)1;//xSemaphoreGive(i2cTransmitLock);
     }
     (void)1;
 }

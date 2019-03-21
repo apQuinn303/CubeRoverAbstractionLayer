@@ -80,7 +80,6 @@ extern int main(void);
 /*SAFETYMCUSW 354 S MR:NA <APPROVED> " Startup code(Extern declaration present in the library)" */
 extern void exit(int _status);
 
-void afterSTC(void);
 
 /* USER CODE BEGIN (3) */
 /* USER CODE END */
@@ -207,57 +206,6 @@ void _c_int00(void)
         /* clear all reset status flags */
         SYS_EXCEPTION = CPU_RESET;
 
-        /* reset could be caused by stcSelfCheck run or by an actual CPU self-test run */
-        
-        /* check if this was an stcSelfCheck run */
-        if ((stcREG->STCSCSCR & 0xFU) == 0xAU)            
-        {
-            /* check if the self-test fail bit is set */
-            if ((stcREG->STCGSTAT & 0x3U) != 0x3U)
-            {
-                /* STC self-check has failed */
-                stcSelfCheckFail();                        
-            }
-            /* STC self-check has passed */
-            else                                        
-            {
-                /* clear self-check mode */
-                stcREG->STCSCSCR = 0x05U;                
-                
-                /* clear STC global status flags */
-                stcREG->STCGSTAT = 0x3U;                
-                
-                /* clear ESM group1 channel 27 status flag */
-                esmREG->SR1[0U] = 0x08000000U;        
-                
-                /* Start CPU Self-Test */
-                cpuSelfTest(STC_INTERVAL, STC_MAX_TIMEOUT, TRUE);                            
-            }
-        }
-        /* CPU reset caused by CPU self-test completion */
-        else if ((stcREG->STCGSTAT & 0x1U) == 0x1U)        
-        {
-            /* Self-Test Fail flag is set */
-            if ((stcREG->STCGSTAT & 0x2U) == 0x2U)        
-            {
-                /* Call CPU self-test failure handler */
-                cpuSelfTestFail();                    
-            }
-            /* CPU self-test completed successfully */
-            else                                        
-            {
-                /* clear STC global status flag */
-                stcREG->STCGSTAT = 0x1U;  
-                
-                /* Continue start-up sequence after CPU STC completed */
-                afterSTC();                                
-            }
-        }
-        /* CPU reset caused by software writing to CPU RESET bit */
-        else                                            
-        {
-            /* Add custom routine here to handle the case where software causes CPU reset */
-        }
 /* USER CODE BEGIN (21) */
 /* USER CODE END */
 
@@ -367,18 +315,6 @@ void _c_int00(void)
 	
     /* Disable PBIST clocks and disable memory self-test mode */
     pbistStop();	
-/* USER CODE BEGIN (27) */
-/* USER CODE END */
-
-    /* Make sure that the CPU self-test controller can actually detect a fault inside CPU */
-    stcSelfCheck();
-
-/* USER CODE BEGIN (28) */
-/* USER CODE END */
-}
-
-void afterSTC(void)
-{
 /* USER CODE BEGIN (29) */
 /* USER CODE END */
 
