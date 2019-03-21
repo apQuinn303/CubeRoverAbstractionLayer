@@ -15,9 +15,15 @@
 #include "pinmux.h"
 #include "sys_core.h"
 
-void coral__sendMDMessage(uint8 addr, MDmessage_t* message)
+int coral__sendMDMessage(uint8 addr, MDmessage_t* message)
 {
-
+#if CONFIG_I2C_USE_INTERRUPTS
+    #if CONFIG_I2C_FAIL_ON_TX_UNAVAILABLE
+        if(i2cInUse == true) return -1;
+    #else
+        while(i2cInUse){};
+    #endif
+#endif
 
     uint8 raw_message[3];
 
@@ -34,6 +40,7 @@ void coral__sendMDMessage(uint8 addr, MDmessage_t* message)
         raw_message[2] |= 1U;
     }
 
+    //Configure options.
     i2cSetSlaveAdd(i2cREG1, (uint32)addr);
 
     i2cSetDirection(i2cREG1, I2C_TRANSMITTER);
@@ -45,33 +52,25 @@ void coral__sendMDMessage(uint8 addr, MDmessage_t* message)
 
     i2cSetStart(i2cREG1);
 
-    //uint8 i = raw_message;
-    //uint8 j = &raw_message;
-
-    //xSemaphoreTake(i2cTransmitLock, 0);
+#if CONFIG_I2C_USE_INTERRUPTS
+    i2cInUse = true;
+#endif
 
     i2cSend(i2cREG1, MD_MESSAGE_LEN, raw_message);
 
-    /*i2cSendByte(i2cREG1, raw_message[0]);
 
-    i2cSendByte(i2cREG1, raw_message[1]);
-
-    i2cSendByte(i2cREG1, raw_message[2]);*/
-
-
-
-
-
-    /* Wait until Bus Busy is cleared */
+#if !CONFIG_I2C_USE_INTERRUPTS
+    // Wait until Bus Busy is cleared
      while(i2cIsBusBusy(i2cREG1) == true);
 
-    /* Wait until Stop is detected */
+    // Wait until Stop is detected
     while(i2cIsStopDetected(i2cREG1) == 0);
 
-    /* Clear the Stop condition */
+    // Clear the Stop condition
     i2cClearSCD(i2cREG1);
+#endif
 
-
+    return 0;
 }
 
 void coral__receiveMDStatus(uint8 addr, MDmessage_t* status)
@@ -86,7 +85,9 @@ void coral__receiveMDStatus(uint8 addr, MDmessage_t* status)
 
 void coral__setup(void)
 {
+    //Make sure I2C pins act like I2C pins.
     muxInit();
+
     /* I2C Init as per GUI
      *  Mode = Master - Transmitter
      *  baud rate = 100KHz
@@ -96,18 +97,17 @@ void coral__setup(void)
 
     _enable_interrupt_();
 
-    //i2cEnableNotification(i2cREG1, I2C_TX_INT | I2C_RX_INT | I2C_ARDY_INT | I2C_NACK_INT);
+#if CONFIG_I2C_USE_INTERRUPTS
+    i2cEnableNotification(i2cREG1, I2C_TX_INT | I2C_SCD_INT);
 
-    //i2cTransmitLock = xSemaphoreCreateMutex();
-
+    i2cInUse = false;
+#endif
 
 }
 
 
 void coral__ledOn()
 {
-    //systemREG1->CLKCNTL |= ((uint32)(1U << 8U));
-
     gioInit();
     gioSetDirection(gioPORTB, 0x2);
     gioSetBit(gioPORTB,1,1);
@@ -135,11 +135,12 @@ uint8 coral__parity(uint8 x)
 
 void i2cNotification(i2cBASE_t *i2c, uint32 flags)
 {
-    (void)1;
-
-    if(flags == (uint32)I2C_TX_INT)
+#if CONFIG_I2C_USE_INTERRUPTS
+    //When we reach the stop condition after a successful transmission...
+    if(flags == (uint32)I2C_SCD_INT)
     {
-        (void)1;//xSemaphoreGive(i2cTransmitLock);
+        //We are allowed to send new messages again.
+        i2cInUse = false;
     }
-    (void)1;
+#endif
 }
