@@ -16,7 +16,7 @@
 in returning -1. Else, it will hang.*/
 #define CONFIG_I2C_FAIL_ON_TX_UNAVAILABLE 0
 /*If 1, I2C messages will be sent using interrupts. Else, polling will be used.*/
-#define CONFIG_I2C_USE_INTERRUPTS 1
+#define CONFIG_I2C_USE_INTERRUPTS 0
 
 
 #define MD_MESSAGE_LEN 3
@@ -45,7 +45,7 @@ void coral__setup(void);
 
 int coral__sendMDMessage(uint8 addr, MDmessage_t* message);
 
-void coral__receiveMDStatus(uint8 addr, MDmessage_t* status);
+int coral__receiveMDStatus(uint8 addr, MDmessage_t* status);
 
 uint8 coral__parity(uint8 x);
 

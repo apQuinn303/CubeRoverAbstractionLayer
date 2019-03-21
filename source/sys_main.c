@@ -86,8 +86,15 @@ void testbench()
     {
         MDmessage_t myMessage;
         myMessage.speedData = 7U;
-        myMessage.checkSum = 10U;
+        myMessage.checkSum = 14U;
         coral__sendMDMessage(10, &myMessage);
+
+        MDmessage_t status;
+        int result;
+
+        result = coral__receiveMDStatus(10,&status);
+
+        result = (int)status.speedData;
     }
 }
 /* USER CODE END */

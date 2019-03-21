@@ -25,6 +25,8 @@ int coral__sendMDMessage(uint8 addr, MDmessage_t* message)
     #endif
 #endif
 
+
+
     uint8 raw_message[3];
 
     //Generate message.
@@ -68,19 +70,87 @@ int coral__sendMDMessage(uint8 addr, MDmessage_t* message)
 
     // Clear the Stop condition
     i2cClearSCD(i2cREG1);
+
+
+
 #endif
+
+
 
     return 0;
 }
 
-void coral__receiveMDStatus(uint8 addr, MDmessage_t* status)
+int coral__receiveMDStatus(uint8 addr, MDmessage_t* status)
 {
-    /*message[2] = (0U | ((message->CounterClockwise) ? 64U : 0U)
-                         | ((message->Error) ? 32U : 0U)
-                         | ((message->RequestMotorStartup) ? 16U : 0U)
-                         | ((message->RequestMotorShutdown) ? 8U : 0U)
-                         | ((message->MotorDriverNotOK) ? 4U : 0U)
-                         | ((message->MotorDriverOK) ? 2U : 0U));*/
+    //Make sure the master is ready before continuing.
+    while(i2cIsMasterReady(i2cREG1) != true);
+
+    uint8 raw_message[3];
+
+    //i2cREG1->DIR = 0U;
+
+    /* Configure address of Slave to talk to */
+     i2cSetSlaveAdd(i2cREG1, (uint32)addr);
+
+     /* Set direction to receiver */
+     i2cSetDirection(i2cREG1, I2C_RECEIVER);
+
+
+     i2cSetCount(i2cREG1, MD_MESSAGE_LEN);
+
+     /* Set mode as Master */
+     i2cSetMode(i2cREG1, I2C_MASTER);
+
+     /* Set Stop after programmed Count */
+     i2cSetStop(i2cREG1);
+
+     /* Transmit Start Condition */
+     i2cSetStart(i2cREG1);
+
+
+     i2cReceive(i2cREG1, MD_MESSAGE_LEN, raw_message);
+
+     /* Wait until Bus Busy is cleared */
+     while(i2cIsBusBusy(i2cREG1) == true);
+
+     /* Wait until Stop is detected */
+     while(i2cIsStopDetected(i2cREG1) == 0);
+
+     /* Clear the Stop condition */
+     i2cClearSCD(i2cREG1);
+
+     //Wait for Master to be ready before returning.
+     //while(i2cIsMasterReady(i2cREG1) != true);
+
+     /*uint8 george = (coral__parity(raw_message[0])
+             ^ coral__parity(raw_message[1])
+             ^ coral__parity(raw_message[2]));*/
+     if((raw_message[0] == 'A') &&
+             ((coral__parity(raw_message[0])
+                     ^ coral__parity(raw_message[1])
+                     ^ coral__parity(raw_message[2])) == 0U))
+     {
+
+         status->checkSum = raw_message[0];
+
+         status->speedData = raw_message[1];
+
+         status->CounterClockwise = (raw_message[2] & 64U) ? true : false;
+         status->Error = (raw_message[2] & 32U)  ? true : false;
+         status->MotorDriverNotOK = (raw_message[2] & 4U) ? true : false;
+         status->MotorDriverOK = (raw_message[2] & 2U)  ? true : false;
+
+         status->RequestMotorShutdown = false;
+         status->RequestMotorStartup = false;
+
+
+         return 0;
+     }
+     else
+     {
+         //Invalid status received.
+         return -1;
+     }
 }
 
 void coral__setup(void)
