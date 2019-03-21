@@ -45,15 +45,20 @@ void coral__sendMDMessage(uint8 addr, MDmessage_t* message)
 
     i2cSetStart(i2cREG1);
 
+    //uint8 i = raw_message;
+    //uint8 j = &raw_message;
+
     //xSemaphoreTake(i2cTransmitLock, 0);
 
-    //i2cSend(i2cREG1, MD_MESSAGE_LEN, raw_message);
+    i2cSend(i2cREG1, MD_MESSAGE_LEN, raw_message);
 
-    i2cSendByte(i2cREG1, raw_message[0]);
+    /*i2cSendByte(i2cREG1, raw_message[0]);
 
     i2cSendByte(i2cREG1, raw_message[1]);
 
-    i2cSendByte(i2cREG1, raw_message[2]);
+    i2cSendByte(i2cREG1, raw_message[2]);*/
+
+
 
 
 
@@ -91,7 +96,7 @@ void coral__setup(void)
 
     _enable_interrupt_();
 
-    i2cEnableNotification(i2cREG1, I2C_TX_INT | I2C_RX_INT | I2C_ARDY_INT | I2C_NACK_INT);
+    //i2cEnableNotification(i2cREG1, I2C_TX_INT | I2C_RX_INT | I2C_ARDY_INT | I2C_NACK_INT);
 
     //i2cTransmitLock = xSemaphoreCreateMutex();
 
