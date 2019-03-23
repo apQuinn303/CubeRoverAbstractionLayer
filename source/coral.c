@@ -15,6 +15,10 @@
 #include "pinmux.h"
 #include "sys_core.h"
 
+
+uint8 coral__parity(uint8 x);
+
+
 int coral__sendMDMessage(uint8 addr, MDmessage_t* message)
 {
 #if CONFIG_I2C_USE_INTERRUPTS
@@ -87,7 +91,6 @@ int coral__receiveMDStatus(uint8 addr, MDmessage_t* status)
 
     uint8 raw_message[3];
 
-    //i2cREG1->DIR = 0U;
 
     /* Configure address of Slave to talk to */
      i2cSetSlaveAdd(i2cREG1, (uint32)addr);
@@ -119,12 +122,7 @@ int coral__receiveMDStatus(uint8 addr, MDmessage_t* status)
      /* Clear the Stop condition */
      i2cClearSCD(i2cREG1);
 
-     //Wait for Master to be ready before returning.
-     //while(i2cIsMasterReady(i2cREG1) != true);
 
-     /*uint8 george = (coral__parity(raw_message[0])
-             ^ coral__parity(raw_message[1])
-             ^ coral__parity(raw_message[2]));*/
      if((raw_message[0] == 'A') &&
              ((coral__parity(raw_message[0])
                      ^ coral__parity(raw_message[1])

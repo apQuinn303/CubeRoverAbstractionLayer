@@ -39,7 +39,7 @@ typedef struct MotorDriverMessage
 
 
 
-void coral__ledOn(void);
+
 
 void coral__setup(void);
 
@@ -47,7 +47,11 @@ int coral__sendMDMessage(uint8 addr, MDmessage_t* message);
 
 int coral__receiveMDStatus(uint8 addr, MDmessage_t* status);
 
-uint8 coral__parity(uint8 x);
+//===========================================================
+
+void coral__ledOn(void);
+
+
 
 
 #endif /* INCLUDE_CORAL_H_ */
